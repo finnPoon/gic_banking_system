@@ -66,7 +66,7 @@ public class StatementService {
             }
 
             // print statement header
-            System.out.println("Account: " + accountId);
+            System.out.println("\nAccount: " + accountId);
             System.out.println("| Date     | Txn Id      | Type | Amount | Balance |");
 
             // calculate running balance for the month including interest

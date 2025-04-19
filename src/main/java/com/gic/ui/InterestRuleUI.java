@@ -17,7 +17,7 @@ public class InterestRuleUI {
     }
 
     public void start() {
-        System.out.println("Please enter interest rules details in <Date> <RuleId> <Rate in %> format ");
+        System.out.println("\nPlease enter interest rules details in <Date> <RuleId> <Rate in %> format ");
         System.out.println("(or enter blank to go back to main menu):");
         while (true) {
             System.out.print(">");
@@ -26,6 +26,7 @@ public class InterestRuleUI {
                 break;
             }
             processInput(line);
+            break;
         }
     }
 
@@ -45,7 +46,7 @@ public class InterestRuleUI {
 
     private void printInterestRules() {
         List<InterestRule> rules = interestRuleService.getAllRules();
-        System.out.println("Interest rules:");
+        System.out.println("\nInterest rules:");
         System.out.println("| Date     | RuleId | Rate (%) |");
         for (InterestRule rule : rules) {
             System.out.printf("| %s | %-6s | %8.2f |\n",

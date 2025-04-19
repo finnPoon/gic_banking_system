@@ -17,7 +17,7 @@ public class TransactionUI {
     }
 
     public void start() {
-        System.out.println("Please enter transaction details in <Date> <Account> <Type> <Amount> format ");
+        System.out.println("\nPlease enter transaction details in <Date> <Account> <Type> <Amount> format ");
         System.out.println("(or enter blank to go back to main menu):");
         while (true) {
             System.out.print(">");
@@ -50,7 +50,7 @@ public class TransactionUI {
             System.out.println("No transactions found for account " + accountId);
             return;
         }
-        System.out.println("Account: " + accountId);
+        System.out.println("\nAccount: " + accountId);
         System.out.println("| Date     | Txn Id      | Type | Amount |");
         for (Transaction txn : txns) {
             System.out.printf("| %s | %-11s | %c    | %6.2f |\n",

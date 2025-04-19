@@ -47,7 +47,7 @@ public class UIHelper {
                     System.out.println("Invalid option. Please try again.");
                     System.out.println("Welcome to AwesomeGIC Bank! What would you like to do?");
             }
-            System.out.println("Is there anything else you'd like to do?");
+            System.out.println("\nIs there anything else you'd like to do?");
         }
     }
 
@@ -60,7 +60,7 @@ public class UIHelper {
     }
 
     private static void quit() {
-        System.out.println("Thank you for banking with AwesomeGIC Bank.");
+        System.out.println("\nThank you for banking with AwesomeGIC Bank.");
         System.out.println("Have a nice day!");
     }
 }

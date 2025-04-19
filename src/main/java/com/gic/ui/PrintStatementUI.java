@@ -15,7 +15,7 @@ public class PrintStatementUI {
     }
 
     public void start() {
-        System.out.println("Please enter account and month to generate the statement <Account> <Year><Month>");
+        System.out.println("\nPlease enter account and month to generate the statement <Account> <Year><Month>");
         System.out.println("(or enter blank to go back to main menu):");
         while (true) {
             System.out.print(">");
@@ -24,6 +24,7 @@ public class PrintStatementUI {
                 break;
             }
             processInput(line);
+            break;
         }
     }
 
