@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 public class InputUtil {
 
+    //validate if the number is a positive number and has no more than 2 decimal places
     public static boolean isValidAmount(String s) {
         try {
             BigDecimal bd = new BigDecimal(s);
@@ -14,6 +15,7 @@ public class InputUtil {
         }
     }
 
+    //validate if the number is a valid number, greater than 0 and less than 100
     public static boolean isValidRate(String s) {
         try {
             BigDecimal bd = new BigDecimal(s);

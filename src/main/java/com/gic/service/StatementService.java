@@ -38,58 +38,53 @@ public class StatementService {
         LocalDate startDate = ym.atDay(1);
         LocalDate endDate = ym.atEndOfMonth();
 
-        // lock account read lock during statement generation
-        account.getLock().readLock().lock();
-        try {
-            // get transactions in the month
-            List<Transaction> monthlyTxns = account.getTransactionsForMonth(yearMonth);
+        // get transactions in the month
+        List<Transaction> monthlyTxns = account.getTransactionsForMonth(yearMonth);
 
-            // calculate daily balances for the month
-            Map<LocalDate, BigDecimal> dailyBalances = calculateDailyBalances(account, startDate, endDate);
+        // calculate daily balances for the month
+        Map<LocalDate, BigDecimal> dailyBalances = calculateDailyBalances(account, startDate, endDate);
 
-            // calculate interest
-            List<InterestSegment> interestSegments = calculateInterestSegments(dailyBalances, startDate, endDate);
+        // calculate interest
+        List<InterestSegment> interestSegments = calculateInterestSegments(dailyBalances, startDate, endDate);
 
-            BigDecimal totalInterest = BigDecimal.ZERO;
-            for (InterestSegment seg : interestSegments) {
-                totalInterest = totalInterest.add(seg.interest);
+        BigDecimal totalInterest = BigDecimal.ZERO;
+        for (InterestSegment seg : interestSegments) {
+            totalInterest = totalInterest.add(seg.interest);
+        }
+
+        // annualize interest
+        totalInterest = totalInterest.divide(BigDecimal.valueOf(365), 10, RoundingMode.HALF_UP);
+        totalInterest = totalInterest.setScale(2, RoundingMode.HALF_UP);
+
+        // add interest transaction on last day of month if interest > 0
+        if (totalInterest.compareTo(BigDecimal.ZERO) > 0) {
+            // Add interest transaction to monthlyTxns for printing only (not stored permanently)
+            Transaction interestTxn = new Transaction("", endDate, 'I', totalInterest);
+            monthlyTxns.add(interestTxn);
+        }
+
+        // print statement header
+        System.out.println("\nAccount: " + accountId);
+        System.out.println("| Date     | Txn Id      | Type | Amount | Balance |");
+
+        // calculate running balance for the month including interest
+        BigDecimal runningBalance = getBalanceBeforeDate(account, startDate);
+        monthlyTxns.sort(Comparator.comparing(Transaction::getDate)
+                .thenComparing(Transaction::getTxnId, Comparator.nullsLast(String::compareTo)));
+
+        for (Transaction txn : monthlyTxns) {
+            if (txn.getType() == 'D' || txn.getType() == 'I') {
+                runningBalance = runningBalance.add(txn.getAmount());
+            } else if (txn.getType() == 'W') {
+                runningBalance = runningBalance.subtract(txn.getAmount());
             }
-            // annualize interest
-            totalInterest = totalInterest.divide(BigDecimal.valueOf(365), 10, RoundingMode.HALF_UP);
-            totalInterest = totalInterest.setScale(2, RoundingMode.HALF_UP);
-
-            // add interest transaction on last day of month if interest > 0
-            if (totalInterest.compareTo(BigDecimal.ZERO) > 0) {
-                // Add interest transaction to monthlyTxns for printing only (not stored permanently)
-                Transaction interestTxn = new Transaction("", endDate, 'I', totalInterest);
-                monthlyTxns.add(interestTxn);
-            }
-
-            // print statement header
-            System.out.println("\nAccount: " + accountId);
-            System.out.println("| Date     | Txn Id      | Type | Amount | Balance |");
-
-            // calculate running balance for the month including interest
-            BigDecimal runningBalance = getBalanceBeforeDate(account, startDate);
-            monthlyTxns.sort(Comparator.comparing(Transaction::getDate)
-                    .thenComparing(Transaction::getTxnId, Comparator.nullsLast(String::compareTo)));
-
-            for (Transaction txn : monthlyTxns) {
-                if (txn.getType() == 'D' || txn.getType() == 'I') {
-                    runningBalance = runningBalance.add(txn.getAmount());
-                } else if (txn.getType() == 'W') {
-                    runningBalance = runningBalance.subtract(txn.getAmount());
-                }
-                String txnId = txn.getTxnId() == null ? "" : txn.getTxnId();
-                System.out.printf("| %s | %-11s | %c    | %6.2f | %7.2f |\n",
-                        txn.getDate().toString().replaceAll("-", ""),
-                        txnId,
-                        txn.getType(),
-                        txn.getAmount(),
-                        runningBalance);
-            }
-        } finally {
-            account.getLock().readLock().unlock();
+            String txnId = txn.getTxnId() == null ? "" : txn.getTxnId();
+            System.out.printf("| %s | %-11s | %c    | %6.2f | %7.2f |\n",
+                    txn.getDate().toString().replaceAll("-", ""),
+                    txnId,
+                    txn.getType(),
+                    txn.getAmount(),
+                    runningBalance);
         }
     }
 

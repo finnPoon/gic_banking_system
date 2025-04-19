@@ -7,14 +7,13 @@ import com.gic.util.InputUtil;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class TransactionService {
 
     // thread-safe map of accounts
-    private final ConcurrentHashMap<String, Account> accounts = new ConcurrentHashMap<>();
+    private final HashMap<String, Account> accounts = new HashMap<>();
 
     public Account getOrCreateAccount(String accountId) {
         return accounts.computeIfAbsent(accountId, Account::new);
@@ -41,24 +40,19 @@ public class TransactionService {
         BigDecimal amount = new BigDecimal(amountStr);
 
         Account account = getOrCreateAccount(accountId);
-        ReentrantReadWriteLock.WriteLock writeLock = account.getLock().writeLock();
-        writeLock.lock();
-        try {
-            // validate balance constraints
-            BigDecimal currentBalance = account.getBalance();
-            if (account.getAllTransactions().isEmpty()) {
-                // first transaction cannot be withdrawal
-                if (type == 'W') {
-                    throw new IllegalArgumentException("First transaction cannot be a withdrawal.");
-                }
+
+        // validate balance constraints
+        BigDecimal currentBalance = account.getBalance();
+        if (account.getAllTransactions().isEmpty()) {
+            // first transaction cannot be withdrawal
+            if (type == 'W') {
+                throw new IllegalArgumentException("First transaction cannot be a withdrawal.");
             }
-            if (type == 'W' && currentBalance.compareTo(amount) < 0) {
-                throw new IllegalArgumentException("Withdrawal would cause negative balance.");
-            }
-            return account.addTransaction(date, type, amount);
-        } finally {
-            writeLock.unlock();
         }
+        if (type == 'W' && currentBalance.compareTo(amount) < 0) {
+            throw new IllegalArgumentException("Withdrawal would cause negative balance.");
+        }
+        return account.addTransaction(date, type, amount);
     }
 
     public List<Transaction> getAllTransactions(String accountId) {
