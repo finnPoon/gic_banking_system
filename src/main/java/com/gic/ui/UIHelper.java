@@ -8,16 +8,15 @@ import java.util.Scanner;
 
 public class UIHelper {
 
-    private final Scanner scanner;
+
+    Scanner scanner = new Scanner(System.in);
     private final TransactionUI transactionUI;
     private final InterestRuleUI interestRuleUI;
     private final PrintStatementUI printStatementUI;
 
-    public UIHelper(Scanner scanner,
-                    TransactionService transactionService,
+    public UIHelper(TransactionService transactionService,
                     InterestRuleService interestRuleService,
                     StatementService statementService) {
-        this.scanner = scanner;
         this.transactionUI = new TransactionUI(scanner, transactionService);
         this.interestRuleUI = new InterestRuleUI(scanner, interestRuleService);
         this.printStatementUI = new PrintStatementUI(scanner, statementService);
@@ -34,15 +33,12 @@ public class UIHelper {
             switch (choice) {
                 case 'T':
                     transactionUI.start();
-                    System.out.println("Is there anything else you'd like to do?");
                     break;
                 case 'I':
                     interestRuleUI.start();
-                    System.out.println("Is there anything else you'd like to do?");
                     break;
                 case 'P':
                     printStatementUI.start();
-                    System.out.println("Is there anything else you'd like to do?");
                     break;
                 case 'Q':
                     quit();
@@ -51,6 +47,7 @@ public class UIHelper {
                     System.out.println("Invalid option. Please try again.");
                     System.out.println("Welcome to AwesomeGIC Bank! What would you like to do?");
             }
+            System.out.println("Is there anything else you'd like to do?");
         }
     }
 
