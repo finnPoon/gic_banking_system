@@ -1,6 +1,7 @@
 package com.gic.util;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
@@ -16,19 +17,11 @@ public class DateUtil {
         }
     }
 
-    public static LocalDate parseYearMonth(String s) {
+    public static YearMonth formatYearMonth(String yearMonth) {
         try {
-            return LocalDate.parse(s + "01", DATE_FORMAT);
-        } catch (DateTimeParseException e) {
+            return YearMonth.parse(yearMonth, YEAR_MONTH_FORMAT);
+        } catch (Exception e) {
             return null;
         }
-    }
-
-    public static String formatDate(LocalDate date) {
-        return date.format(DATE_FORMAT);
-    }
-
-    public static String formatYearMonth(LocalDate date) {
-        return date.format(YEAR_MONTH_FORMAT);
     }
 }

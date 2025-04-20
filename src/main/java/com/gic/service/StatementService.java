@@ -10,6 +10,8 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.*;
 
+import static com.gic.util.DateUtil.formatYearMonth;
+
 public class StatementService {
 
     private final TransactionService transactionService;
@@ -27,10 +29,8 @@ public class StatementService {
             return;
         }
 
-        YearMonth ym;
-        try {
-            ym = YearMonth.parse(yearMonth, java.time.format.DateTimeFormatter.ofPattern("yyyyMM"));
-        } catch (Exception e) {
+        YearMonth ym = formatYearMonth(yearMonth);
+        if(ym == null){
             System.out.println("Invalid year-month format.");
             return;
         }

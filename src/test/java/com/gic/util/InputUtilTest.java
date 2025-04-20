@@ -13,8 +13,14 @@ public class InputUtilTest {
     }
 
     @Test
-    public void testIsValidAmountInvalidAmount() {
+    public void testIsValidAmountNegativeAmount() {
         String amountStr = "-100.00";
+        assertFalse(InputUtil.isValidAmount(amountStr));
+    }
+
+    @Test
+    public void testIsValidAmountDecimalPoint() {
+        String amountStr = "100.2231";
         assertFalse(InputUtil.isValidAmount(amountStr));
     }
 
