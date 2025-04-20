@@ -42,8 +42,4 @@ public class InterestRuleService {
     public NavigableMap<LocalDate, InterestRule> getRulesBetween(LocalDate start, LocalDate end) {
         return interestRules.subMap(start, true, end, true);
     }
-
-    public LocalDate getEarliestRuleDate() {
-        return interestRules.isEmpty() ? null : interestRules.firstKey();
-    }
 }

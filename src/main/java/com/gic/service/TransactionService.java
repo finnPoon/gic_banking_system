@@ -12,7 +12,6 @@ import java.util.List;
 
 public class TransactionService {
 
-    // thread-safe map of accounts
     private final HashMap<String, Account> accounts = new HashMap<>();
 
     public Account getOrCreateAccount(String accountId) {
