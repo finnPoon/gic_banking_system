@@ -6,7 +6,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.NavigableMap;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -35,6 +38,21 @@ public class InterestRuleServiceTest {
     }
 
     @Test
+    void testAddOrUpdateInterestRuleInvalidDate() {
+        assertThrows(IllegalArgumentException.class, () -> interestRuleService.addOrUpdateInterestRule("2024-05-03", "RULE001", "1.5"));
+    }
+
+    @Test
+    void testAddOrUpdateInterestRuleEmptyRuleId() {
+        assertThrows(IllegalArgumentException.class, () -> interestRuleService.addOrUpdateInterestRule("20240503", "", "1.5"));
+    }
+
+    @Test
+    void testAddOrUpdateInterestRuleInvalidRate() {
+        assertThrows(IllegalArgumentException.class, () -> interestRuleService.addOrUpdateInterestRule("20240503", "RULE001", "101"));
+    }
+
+    @Test
     public void testGetAllRules() {
         String dateStr1 = "20240421";
         String ruleId1 = "RULE001";
@@ -51,5 +69,35 @@ public class InterestRuleServiceTest {
         assertEquals(2, rules.size());
         assertEquals(ruleId1, rules.get(0).getRuleId());
         assertEquals(ruleId2, rules.get(1).getRuleId());
+    }
+
+    @Test
+    void testGetRuleForDate() {
+        interestRuleService.addOrUpdateInterestRule("20240503", "RULE001", "1.5");
+        InterestRule rule = interestRuleService.getRuleForDate(LocalDate.of(2024, 5, 3));
+        assertNotNull(rule);
+        assertEquals(LocalDate.of(2024, 5, 3), rule.getDate());
+        assertEquals("RULE001", rule.getRuleId());
+        assertEquals(new BigDecimal("1.5"), rule.getRate());
+
+        rule = interestRuleService.getRuleForDate(LocalDate.of(2024, 5, 4));
+        assertNotNull(rule);
+        assertEquals(LocalDate.of(2024, 5, 3), rule.getDate());
+        assertEquals("RULE001", rule.getRuleId());
+        assertEquals(new BigDecimal("1.5"), rule.getRate());
+
+        rule = interestRuleService.getRuleForDate(LocalDate.of(2024, 5, 2));
+        assertNull(rule);
+    }
+
+    @Test
+    void testGetRulesBetween() {
+        interestRuleService.addOrUpdateInterestRule("20240501", "RULE001", "1.0");
+        interestRuleService.addOrUpdateInterestRule("20240503", "RULE002", "1.5");
+        interestRuleService.addOrUpdateInterestRule("20240505", "RULE003", "2.0");
+
+        NavigableMap<LocalDate, InterestRule> rules = interestRuleService.getRulesBetween(LocalDate.of(2024, 5, 2), LocalDate.of(2024, 5, 4));
+        assertEquals(1, rules.size());
+        assertTrue(rules.containsKey(LocalDate.of(2024, 5, 3)));
     }
 }

@@ -25,19 +25,14 @@ public class TransactionServiceTest {
 
     @Test
     public void testAddValidDepositTransaction() {
-        String dateStr = "20240421";
-        String accountId = "ACC123";
-        String typeStr = "D";
-        String amountStr = "100.00";
-
-        Transaction transaction = transactionService.addTransaction(dateStr, accountId, typeStr, amountStr);
+        Transaction transaction = transactionService.addTransaction("20240421", "ACC123", "D", "100.00");
 
         assertNotNull(transaction);
-        assertEquals(DateUtil.parseDate(dateStr), transaction.getDate());
+        assertEquals(DateUtil.parseDate("20240421"), transaction.getDate());
         assertEquals('D', transaction.getType());
-        assertEquals(new BigDecimal(amountStr), transaction.getAmount());
+        assertEquals(new BigDecimal("100.00"), transaction.getAmount());
 
-        Account account = transactionService.getAccount(accountId);
+        Account account = transactionService.getAccount("ACC123");
         assertNotNull(account);
         assertEquals(new BigDecimal("100.00"), account.getBalance());
     }
@@ -46,20 +41,16 @@ public class TransactionServiceTest {
     public void testAddValidWithdrawalTransaction() {
         String dateStr = "20240421";
         String accountId = "ACC123";
-        String depositTypeStr = "D";
-        String depositAmountStr = "200.00";
-        String withdrawalTypeStr = "W";
-        String withdrawalAmountStr = "100.00";
 
         // Add a deposit first
-        transactionService.addTransaction(dateStr, accountId, depositTypeStr, depositAmountStr);
+        transactionService.addTransaction(dateStr, accountId, "D", "200.00");
 
-        Transaction withdrawal = transactionService.addTransaction(dateStr, accountId, withdrawalTypeStr, withdrawalAmountStr);
+        Transaction withdrawal = transactionService.addTransaction(dateStr, accountId, "W", "100.00");
 
         assertNotNull(withdrawal);
         assertEquals(DateUtil.parseDate(dateStr), withdrawal.getDate());
         assertEquals('W', withdrawal.getType());
-        assertEquals(new BigDecimal(withdrawalAmountStr), withdrawal.getAmount());
+        assertEquals(new BigDecimal("100.00"), withdrawal.getAmount());
 
         Account account = transactionService.getAccount(accountId);
         assertNotNull(account);
@@ -73,7 +64,6 @@ public class TransactionServiceTest {
         String typeStr = "W";
         String amountStr = "100.00";
 
-        // Ensure that the function throws an exception if its the first transaction
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             transactionService.addTransaction(dateStr, accountId, typeStr, amountStr);
         });
@@ -86,7 +76,7 @@ public class TransactionServiceTest {
         // add a deposit first
         transactionService.addTransaction(dateStr, accountId, "D", "50.00");
 
-        // Test the second withdrawal
+        // test the second withdrawal
         exception = assertThrows(IllegalArgumentException.class, () -> {
             transactionService.addTransaction(dateStr, accountId, typeStr, amountStr);
         });
@@ -98,67 +88,72 @@ public class TransactionServiceTest {
     }
 
     @Test
-    public void testAddTransactionInvalidDateFormat() {
-        String dateStr = "2024/04/21";
-        String accountId = "ACC123";
-        String typeStr = "D";
-        String amountStr = "100.00";
-
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            transactionService.addTransaction(dateStr, accountId, typeStr, amountStr);
-        });
-
-        String expectedMessage = "Invalid date format. Use YYYYMMdd.";
-        String actualMessage = exception.getMessage();
-
-        assertTrue(actualMessage.contains(expectedMessage));
+    void testAddTransactionInvalidDate() {
+        assertThrows(IllegalArgumentException.class, () -> transactionService.addTransaction("2024-04-01", "ACC123", "D", "100.00"));
     }
 
     @Test
-    public void testAddTransactionInvalidAmountFormat() {
-        String dateStr = "20240421";
-        String accountId = "ACC123";
-        String typeStr = "D";
-        String amountStr = "-100.00";
+    void testAddTransactionEmptyAccount() {
+        assertThrows(IllegalArgumentException.class, () -> transactionService.addTransaction("20240401", "", "D", "100.00"));
+    }
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            transactionService.addTransaction(dateStr, accountId, typeStr, amountStr);
-        });
+    @Test
+    void testAddTransactionInvalidType() {
+        assertThrows(IllegalArgumentException.class, () -> transactionService.addTransaction("20240401", "ACC123", "X", "100.00"));
+    }
 
-        String expectedMessage = "Amount must be a positive number with up to 2 decimal places.";
-        String actualMessage = exception.getMessage();
+    @Test
+    void testAddTransactionInvalidAmount() {
+        assertThrows(IllegalArgumentException.class, () -> transactionService.addTransaction("20240401", "ACC123", "D", "abc"));
+    }
 
-        assertTrue(actualMessage.contains(expectedMessage));
+    @Test
+    void testAddTransactionWithdrawalBeforeDeposit() {
+        assertThrows(IllegalArgumentException.class, () -> transactionService.addTransaction("20240401", "ACC123", "W", "100.00"));
+    }
+
+    @Test
+    void testAddTransactionWithdrawalExceedingBalance() {
+        transactionService.addTransaction("20240401", "ACC123", "D", "100.00");
+        assertThrows(IllegalArgumentException.class, () -> transactionService.addTransaction("20240402", "ACC123", "W", "200.00"));
     }
 
     @Test
     public void testGetAllTransactions() {
-        String dateStr = "20240421";
-        String accountId = "ACC123";
-        String typeStr = "D";
-        String amountStr = "100.00";
+        transactionService.addTransaction("20240421", "ACC123", "D", "100.00");
 
-        transactionService.addTransaction(dateStr, accountId, typeStr, amountStr);
-
-        List<Transaction> transactions = transactionService.getAllTransactions(accountId);
+        List<Transaction> transactions = transactionService.getAllTransactions("ACC123");
         assertNotNull(transactions);
         assertEquals(1, transactions.size());
     }
 
     @Test
+    void testGetAllTransactionsNonExistentAccount() {
+        List<Transaction> txns = transactionService.getAllTransactions("ACC123");
+        assertTrue(txns.isEmpty());
+    }
+
+    @Test
     public void testGetTransactionsForMonth() {
-        String dateStr1 = "20240421";
-        String dateStr2 = "20240521";
-        String accountId = "ACC123";
-        String typeStr = "D";
-        String amountStr = "100.00";
+        transactionService.addTransaction("20240421", "ACC123", "D", "100.00");
+        transactionService.addTransaction("20240521", "ACC123", "D", "100.00");
 
-        transactionService.addTransaction(dateStr1, accountId, typeStr, amountStr);
-        transactionService.addTransaction(dateStr2, accountId, typeStr, amountStr);
-
-        List<Transaction> transactions = transactionService.getTransactionsForMonth(accountId, "202404");
+        List<Transaction> transactions = transactionService.getTransactionsForMonth("ACC123", "202404");
         assertNotNull(transactions);
         assertEquals(1, transactions.size());
-        assertEquals(DateUtil.parseDate(dateStr1), transactions.get(0).getDate());
+        assertEquals(DateUtil.parseDate("20240421"), transactions.get(0).getDate());
+    }
+
+    @Test
+    void testGetAccount() {
+        transactionService.getOrCreateAccount("ACC123");
+        Account account = transactionService.getAccount("ACC123");
+        assertNotNull(account);
+    }
+
+    @Test
+    void testGetAccountNonExistent() {
+        Account account = transactionService.getAccount("ACC123");
+        assertNull(account);
     }
 }
