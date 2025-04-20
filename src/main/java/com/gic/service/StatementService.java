@@ -3,6 +3,7 @@ package com.gic.service;
 import com.gic.model.Account;
 import com.gic.model.InterestRule;
 import com.gic.model.Transaction;
+import com.gic.util.DateUtil;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -10,7 +11,7 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.*;
 
-import static com.gic.util.DateUtil.formatYearMonth;
+
 
 public class StatementService {
 
@@ -29,7 +30,7 @@ public class StatementService {
             return;
         }
 
-        YearMonth ym = formatYearMonth(yearMonth);
+        YearMonth ym = DateUtil.parseYearMonth(yearMonth);
         if(ym == null){
             System.out.println("Invalid year-month format.");
             return;

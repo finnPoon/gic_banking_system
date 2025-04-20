@@ -17,7 +17,7 @@ public class DateUtil {
         }
     }
 
-    public static YearMonth formatYearMonth(String yearMonth) {
+    public static YearMonth parseYearMonth(String yearMonth) {
         try {
             return YearMonth.parse(yearMonth, YEAR_MONTH_FORMAT);
         } catch (Exception e) {
